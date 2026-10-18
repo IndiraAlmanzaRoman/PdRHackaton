@@ -20,6 +20,35 @@ enum SaleChannel {
   AFFILIATE
 }
 
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+enum TaskKind {
+  PURCHASE_ORDER
+  INVENTORY
+  COUPON
+}
+
+// Cards of the Kanban board. `status` is the column and `position` the order
+// inside that column; both are persisted when a card is dragged and dropped.
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  kind        TaskKind   @default(INVENTORY)
+  status      TaskStatus @default(TODO)
+  position    Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([status, position])
+  @@index([kind])
+}
+
 model Customer {
   id        String   @id @default(cuid())
   name      String

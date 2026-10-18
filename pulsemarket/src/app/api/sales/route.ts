@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 import { getSalesPage } from "@/lib/services/sales";
 import { SalesQuerySchema } from "@/lib/validators/sales";
 
 export async function GET(request: NextRequest) {
+  // The proxy already rejects anonymous requests; re-check as defense in depth.
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
   const rawQuery = Object.fromEntries(request.nextUrl.searchParams.entries());
   const parsed = SalesQuerySchema.safeParse(rawQuery);
 

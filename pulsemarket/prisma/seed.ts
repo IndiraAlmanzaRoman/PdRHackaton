@@ -1,6 +1,11 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, SaleChannel } from "../src/generated/prisma/client";
+import {
+  PrismaClient,
+  SaleChannel,
+  TaskKind,
+  TaskStatus,
+} from "../src/generated/prisma/client";
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -14,6 +19,7 @@ const prisma = new PrismaClient({ adapter });
 const CUSTOMER_COUNT = 3_000;
 const PRODUCT_COUNT = 2_500;
 const SALE_COUNT = 12_500;
+const TASK_COUNT = 24;
 const BATCH_SIZE = 1_000;
 
 const categories = [
@@ -35,6 +41,23 @@ const channels = [
   SaleChannel.SOCIAL,
   SaleChannel.AFFILIATE,
 ] as const;
+
+const taskStatuses = [
+  TaskStatus.TODO,
+  TaskStatus.IN_PROGRESS,
+  TaskStatus.REVIEW,
+  TaskStatus.DONE,
+] as const;
+const taskKinds = [
+  TaskKind.PURCHASE_ORDER,
+  TaskKind.INVENTORY,
+  TaskKind.COUPON,
+] as const;
+const taskKindLabels: Record<TaskKind, string> = {
+  PURCHASE_ORDER: "Orden de compra",
+  INVENTORY: "Tarea de inventario",
+  COUPON: "Cupón",
+};
 
 async function main() {
   const customers = Array.from({ length: CUSTOMER_COUNT }, (_, index) => {
@@ -110,8 +133,27 @@ async function main() {
     });
   }
 
+  // Kanban cards. `position` is the order inside each status column.
+  const tasks = Array.from({ length: TASK_COUNT }, (_, index) => {
+    const number = index + 1;
+    const kind = taskKinds[index % taskKinds.length];
+    const status = taskStatuses[index % taskStatuses.length];
+
+    return {
+      id: `seed_task_${String(number).padStart(5, "0")}`,
+      title: `${taskKindLabels[kind]} #${number}`,
+      description: `Elemento de ejemplo ${number} del tablero Kanban.`,
+      kind,
+      status,
+      position: Math.floor(index / taskStatuses.length),
+      updatedAt: new Date(),
+    };
+  });
+
+  await prisma.task.createMany({ data: tasks, skipDuplicates: true });
+
   console.log(
-    `Seed complete: ${CUSTOMER_COUNT} customers, ${PRODUCT_COUNT} products, ${SALE_COUNT} sales (18,000 records total).`,
+    `Seed complete: ${CUSTOMER_COUNT} customers, ${PRODUCT_COUNT} products, ${SALE_COUNT} sales (18,000 records total) and ${TASK_COUNT} Kanban tasks.`,
   );
 }
 

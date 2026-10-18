@@ -1,8 +1,14 @@
 name: Update lockfile
 
-# Regenerates pulsemarket/package-lock.json after package.json changes.
-# Run manually from the Actions tab (select the branch first).
+# Regenerates pulsemarket/package-lock.json whenever package.json changes on
+# the Indira branch, so `npm ci` in the CI workflow stays in sync.
+# (A workflow_dispatch trigger is kept for manual runs once this file is on
+# the default branch.)
 on:
+  push:
+    branches: [Indira]
+    paths:
+      - pulsemarket/package.json
   workflow_dispatch:
 
 permissions:
