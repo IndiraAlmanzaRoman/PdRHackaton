@@ -1,4 +1,5 @@
 import { Suspense, type ReactNode } from "react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { signOutAction } from "../login/actions";
@@ -29,9 +30,27 @@ async function AuthenticatedShell({ children }: { children: ReactNode }) {
   return (
     <>
       <header className="flex items-center justify-between border-b border-zinc-200 bg-white px-6 py-3 dark:border-zinc-800 dark:bg-zinc-900">
-        <span className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          PulseMarket
-        </span>
+        <div className="flex items-center gap-6">
+          <span className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            PulseMarket
+          </span>
+          <nav aria-label="Principal" className="flex items-center gap-4 text-sm">
+            <Link
+              href="/dashboard"
+              data-testid="nav-dashboard"
+              className="font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+            >
+              Resumen
+            </Link>
+            <Link
+              href="/dashboard/kanban"
+              data-testid="nav-kanban"
+              className="font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+            >
+              Kanban
+            </Link>
+          </nav>
+        </div>
         <div className="flex items-center gap-4">
           <span
             data-testid="user-name"
